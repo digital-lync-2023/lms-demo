@@ -1,45 +1,95 @@
-# LMS-JAVA Application Docker Deployment
-## Server setup:
-    Server type: T2.medium server
-    Ports: 22,80,8080,3306
-    
-## Setup Docker:
-    sudo apt update
-    curl -fsSL https://get.docker.com -o install-docker.sh
-    sudo sh install-docker.sh
-    sudo usermod -aG docker $USER
-    newgrp docker
-## Deployment useing docker compose file
-    Install docker-compose: sudo apt install docker-compose -y
-    To run the containers use : docker-compose up -d
-    To stop the containers use : docker-compose down
+# LMS-JAVA MINIKUBE DEPLOYMENT
+## STEPS:
+- Launch Server
+- Install Software
+- Create K8S Manifest files
+- Deploy K8S files
+## STEP-1: Launch Server
+- Guide - https://minikube.sigs.k8s.io/docs/start/
+- Requirements —-------t2.medium instance in AWS
+- 2 CPUs or more
+2GB of free ram memory
+30GB of free disk space
+## STEP-2: Install Softwares
+### Update system
+- sudo apt update
+### Docker setup
+Visit: https://get.docker.com/
+curl -fsSL https://get.docker.com -o install-docker.sh
+sudo sh install-docker.sh
+sudo usermod -aG docker ubuntu
+newgrp docker
+docker -v
+### Kubectl setup
+Visit: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/kubectl
+kubectl version
+### Minikube setup
+Visit: https://minikube.sigs.k8s.io/docs/start/
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+minikube version
+## STEP-3: Create K8S Manifest files
+Code: git clone -b minikube https://github.com/muralialakuntla3/lms-java.git
+### Database:
+#### mysql-secrets.yml
+**echo -n Qwerty@123 | base64**
+**UXdlcnR5QDEyMw==**
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: mysql-secret
+    data:
+      password: UXdlcnR5QDEyMw==
+#### mysql-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+#### mysql-cluster-ip.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-cluster-ip
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
 
-## Database setup:
-    docker network create -d bridge lmsnetwork 
-    docker container run -d --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=password -p 3306:3306 mysql:latest
+Backend:
+Frontend:
 
-## BACKEND BUILD:
-    NOTE: update database details in **cd LMS-BE/src/main/resource/application.properties**
-    **databse url:mysql://**34.242.172.238**:3306/**
-    **databse pw:password**
-    cd lms-spring/lms-be
-    docker build -t muralialakuntla3/lms-be .
-    docker container run -dt --name lms-be -p 8080:8080 muralialakuntla3/lms-be
-    docker ps
 
-##### Check backend in browser: http://pub-ip:8080/user/login
 
-## FRONTEND BUILD:
-### Connect frontend with backend  : 
-    cd lms-fe/lmsv1/src/Components/
-    sudo vi Home.jsx
-   ** line-10:** const response = await axios.get("**http://pub-ip:8080/user/login**");
 
-### build frontend:
-    cd lms-spring/lms-fe/lmsv1
-    docker build -t muralialakuntla3/lms-fe .
-    docker container run -dt --name lms-fe -p 80:80 muralialakuntla3/lms-fe
-    docker ps    
-
+STEP-4: Deploy K8S files
 
 
