@@ -36,56 +36,17 @@ minikube version
 Code: git clone -b minikube https://github.com/muralialakuntla3/lms-java.git
 ### Database:
 #### mysql-secrets.yml
-**echo -n Qwerty@123 | base64**
-**UXdlcnR5QDEyMw==**
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: mysql-secret
-    data:
-      password: UXdlcnR5QDEyMw==
+- to encrypt the password
+- **echo -n <password> | base64**
+- **encrypted-pw**
+- secrets configuration scripts
 #### mysql-deployment.yml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mysql-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-      - name: mysql
-        image: mysql:latest
-        ports:
-        - containerPort: 3306
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
+- deployment configutration scripts
 #### mysql-cluster-ip.yml
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql-cluster-ip
-spec:
-  selector:
-    app: mysql
-  ports:
-    - protocol: TCP
-      port: 3306
-      targetPort: 3306
-  type: ClusterIP
+- cluster-ip configuration scripts
 
-Backend:
-Frontend:
+### Backend:
+### Frontend:
 
 
 
