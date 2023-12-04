@@ -20,7 +20,7 @@ spec:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://172.17.0.2:3306/LMS?allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&useSSL=false
+              value: jdbc:mysql://mysql-cluster-ip:3306/LMS?allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&useSSL=false
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
