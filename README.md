@@ -37,7 +37,7 @@
 ### Database:
 #### mysql-secrets.yml
 - to encrypt the password
-- **echo -n <password> | base64**
+- **echo -n password | base64**
 - **encrypted-pw**
 - secrets configuration scripts
 #### mysql-deployment.yml
